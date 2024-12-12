@@ -1,974 +1,978 @@
 <!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>EcoDelivery</title>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoDelivery Cartagena</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
-    <link
-      href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css"
-      rel="stylesheet"
-    />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" rel="stylesheet" />
     <style>
-      /* Variables de color */
-      :root {
-        --primary-color: #10b981;
-        --secondary-color: #064e3b;
-        --accent-color: #34d399;
-        --background-color: #f9fafb;
-        --text-color: #1f2937;
-        --border-color: #e5e7eb;
-      }
-      /* Estilos generales */
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
-      }
-      body {
-        background-color: var(--background-color);
-        color: var(--text-color);
-      }
-      .container {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 1rem;
-      }
-      .header-content {
-        background-color: white;
-        padding: 1rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      }
-      .title {
-        color: var(--primary-color);
-        font-size: 1.5rem;
-      }
-      .button {
-        background-color: var(--primary-color);
-        color: white;
-        padding: 0.75rem 1.5rem;
-        border: none;
-        border-radius: 0.5rem;
-        cursor: pointer;
-        transition: background-color 0.3s;
-      }
-      .button:hover {
-        background-color: var(--accent-color);
-      }
-      .screen {
-        display: none;
-        min-height: calc(100vh - 140px);
-        padding: 1rem;
-        margin-bottom: 60px;
-      }
-      .screen.active {
-        display: block;
-      }
-      .category-list {
-        display: flex;
-        gap: 1rem;
-        margin: 1rem 0;
-        overflow-x: auto;
-        padding: 0.5rem;
-      }
-      .category-list button {
-        background-color: white;
-        border: 1px solid var(--border-color);
-        padding: 0.75rem 1.5rem;
-        border-radius: 2rem;
-        cursor: pointer;
-        white-space: nowrap;
-        transition: background-color 0.3s, color 0.3s;
-      }
-      .category-list button.active {
-        background-color: var(--primary-color);
-        color: white;
-        border-color: var(--primary-color);
-      }
-      .category-list button:hover {
-        background-color: var(--accent-color);
-        color: white;
-      }
-      .restaurant-list {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 1.5rem;
-        padding: 1rem 0;
-      }
-      .restaurant-card {
-        background-color: white;
-        border-radius: 1rem;
-        overflow: hidden;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        transition: transform 0.3s ease;
-      }
-      .restaurant-card:hover {
-        transform: translateY(-4px);
-      }
-      .restaurant-card img {
-        width: 100%;
-        height: 180px;
-        object-fit: cover;
-      }
-      .restaurant-card-content {
-        padding: 1rem;
-      }
-      .restaurant-info {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-top: 0.5rem;
-      }
-      .tracking-info {
-        background-color: white;
-        border-radius: 1rem;
-        padding: 1.5rem;
-        margin-top: 1rem;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      }
-      .tracking-status {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        margin: 1rem 0;
-        padding: 1rem;
-        background-color: #f3f4f6;
-        border-radius: 0.5rem;
-      }
-      .status-icon {
-        width: 2.5rem;
-        height: 2.5rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 50%;
-      }
-      .map-container {
-        height: 300px;
-        border-radius: 1rem;
-        overflow: hidden;
-        margin: 1rem 0;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      }
-      .impact-stats {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 1.5rem;
-        margin: 1.5rem 0;
-      }
-      .impact-stat {
-        background-color: white;
-        padding: 1.5rem;
-        border-radius: 1rem;
-        text-align: center;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      }
-      .cart-list {
-        max-height: 400px;
-        overflow-y: auto;
-      }
-      .cart-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 1rem;
-        border-bottom: 1px solid var(--border-color);
-      }
-      .cart-button {
-        position: fixed;
-        bottom: 5rem;
-        right: 1.5rem;
-        background-color: var(--primary-color);
-        color: white;
-        padding: 1rem;
-        border-radius: 50%;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        cursor: pointer;
-        z-index: 1000;
-      }
-      .cart-count {
-        position: absolute;
-        top: -0.5rem;
-        right: -0.5rem;
-        background-color: var(--accent-color);
-        padding: 0.25rem 0.5rem;
-        border-radius: 1rem;
-        font-size: 0.75rem;
-      }
-      nav {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background-color: white;
-        display: flex;
-        justify-content: space-around;
-        padding: 1rem;
-        box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
-        z-index: 1000;
-      }
-      .nav-btn {
-        color: #6b7280;
-        text-decoration: none;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 0.25rem;
-        transition: color 0.3s;
-      }
-      .nav-btn.active {
-        color: var(--primary-color);
-      }
-      .nav-btn:hover {
-        color: var(--accent-color);
-      }
-      .menu-list {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-        gap: 1rem;
-        padding: 1rem;
-      }
-      .menu-item {
-        background-color: white;
-        border-radius: 0.5rem;
-        padding: 1rem;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        transition: transform 0.3s ease;
-      }
-      .menu-item:hover {
-        transform: translateY(-4px);
-      }
-      .checkout-button {
-        background-color: var(--primary-color);
-        color: white;
-        padding: 0.75rem 1.5rem;
-        border: none;
-        border-radius: 0.5rem;
-        cursor: pointer;
-        transition: background-color 0.3s;
-      }
-      .checkout-button:hover {
-        background-color: var(--accent-color);
-      }
-      .payment-methods {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1rem;
-        margin: 1rem 0;
-      }
-      .payment-method {
-        background-color: white;
-        border: 2px solid var(--border-color);
-        border-radius: 0.5rem;
-        padding: 1rem;
-        cursor: pointer;
-        text-align: center;
-        transition: all 0.3s ease;
-      }
-      .payment-method.selected {
-        border-color: var(--primary-color);
-        background-color: #f0fdf4;
-      }
-      .payment-method:hover {
-        border-color: var(--accent-color);
-      }
-      #notifications {
-        position: fixed;
-        top: 1rem;
-        right: 1rem;
-        z-index: 1000;
-      }
-      .notification {
-        background-color: var(--primary-color);
-        color: white;
-        padding: 1rem;
-        border-radius: 0.5rem;
-        margin-bottom: 0.5rem;
-        animation: slideIn 0.3s ease-out;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      }
-      @keyframes slideIn {
-        from {
-          transform: translateX(100%);
-          opacity: 0;
+        /* Variables de color */
+        :root {
+            --primary-color: #10B981;
+            --secondary-color: #064E3B;
+            --accent-color: #34D399;
+            --background-color: #F9FAFB;
+            --text-color: #1F2937;
+            --border-color: #E5E7EB;
         }
-        to {
-          transform: translateX(0);
-          opacity: 1;
+        /* Estilos generales */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
         }
-      }
-      .login-form,
-      .delivery-info {
-        background-color: white;
-        padding: 1.5rem;
-        border-radius: 1rem;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        margin-top: 1rem;
-      }
-      .login-form input,
-      .delivery-info input,
-      .delivery-info textarea {
-        width: 100%;
-        padding: 0.75rem;
-        margin: 0.5rem 0;
-        border: 1px solid var(--border-color);
-        border-radius: 0.5rem;
-      }
-      .login-form button,
-      .delivery-info button {
-        background-color: var(--primary-color);
-        color: white;
-        padding: 0.75rem 1.5rem;
-        border: none;
-        border-radius: 0.5rem;
-        cursor: pointer;
-        transition: background-color 0.3s;
-      }
-      .login-form button:hover,
-      .delivery-info button:hover {
-        background-color: var(--accent-color);
-      }
-      .login-form button,
-      #logoutButton {
-        margin-left: 1rem;
-      }
-      .restaurant-detail-header {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-        margin-bottom: 1rem;
-      }
-      .restaurant-detail-header img {
-        width: 100%;
-        max-width: 300px;
-        border-radius: 1rem;
-        margin-bottom: 1rem;
-      }
-      .rating-stars {
-        display: flex;
-        gap: 0.25rem;
-        margin-bottom: 0.5rem;
-      }
-      .restaurant-badges {
-        display: flex;
-        gap: 0.5rem;
-        flex-wrap: wrap;
-        justify-content: center;
-      }
-      .badge {
-        background-color: var(--primary-color);
-        color: white;
-        padding: 0.5rem 1rem;
-        border-radius: 1rem;
-        font-size: 0.875rem;
-      }
-      .menu-categories {
-        display: flex;
-        gap: 0.5rem;
-        justify-content: center;
-        margin-bottom: 1rem;
-      }
-      .menu-category {
-        background-color: var(--background-color);
-        border: 1px solid var(--border-color);
-        padding: 0.5rem 1rem;
-        border-radius: 1rem;
-        cursor: pointer;
-        transition: background-color 0.3s, color 0.3s;
-      }
-      .menu-category.active {
-        background-color: var(--primary-color);
-        color: white;
-        border-color: var(--primary-color);
-      }
-      .menu-category:hover {
-        background-color: var(--accent-color);
-        color: white;
-      }
-      .menu-section {
-        margin-bottom: 1.5rem;
-      }
-      .menu-section-title {
-        font-size: 1.25rem;
-        color: var(--primary-color);
-        margin-bottom: 0.75rem;
-      }
-      .menu-item-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 0.5rem;
-      }
-      .menu-item-name {
-        font-weight: bold;
-      }
-      .menu-item-price {
-        color: var(--primary-color);
-      }
-      .menu-item-description {
-        margin-bottom: 0.5rem;
-        color: var(--text-color);
-      }
-      .quantity-control {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-      }
-      .quantity-button {
-        background-color: var(--primary-color);
-        color: white;
-        border: none;
-        padding: 0.5rem;
-        border-radius: 0.5rem;
-        cursor: pointer;
-        transition: background-color 0.3s;
-      }
-      .quantity-button:hover {
-        background-color: var(--accent-color);
-      }
-      .empty-cart {
-        text-align: center;
-        padding: 2rem;
-      }
-      .order-details {
-        margin-top: 1rem;
-        padding: 1rem;
-        background-color: white;
-        border-radius: 1rem;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      }
-      .order-detail-row {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 0.5rem;
-      }
-      .address-input,
-      .special-instructions {
-        width: 100%;
-        padding: 0.75rem;
-        margin: 0.5rem 0;
-        border: 1px solid var(--border-color);
-        border-radius: 0.5rem;
-      }
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+        .header-content {
+            background-color: white;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .title {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+        }
+        .button {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .button:hover {
+            background-color: var(--accent-color);
+        }
+        .screen {
+            display: none;
+            min-height: calc(100vh - 140px);
+            padding: 1rem;
+            margin-bottom: 60px;
+        }
+        .screen.active {
+            display: block;
+        }
+        .category-list {
+            display: flex;
+            gap: 1rem;
+            margin: 1rem 0;
+            overflow-x: auto;
+            padding: 0.5rem;
+        }
+        .category-list button {
+            background-color: white;
+            border: 1px solid var(--border-color);
+            padding: 0.75rem 1.5rem;
+            border-radius: 2rem;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .category-list button.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        .category-list button:hover {
+            background-color: var(--accent-color);
+            color: white;
+        }
+        .restaurant-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            padding: 1rem 0;
+        }
+        .restaurant-card {
+            background-color: white;
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        .restaurant-card:hover {
+            transform: translateY(-4px);
+        }
+        .restaurant-card img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+        .restaurant-card-content {
+            padding: 1rem;
+        }
+        .restaurant-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 0.5rem;
+        }
+        .tracking-info {
+            background-color: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-top: 1rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .tracking-status {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin: 1rem 0;
+            padding: 1rem;
+            background-color: #f3f4f6;
+            border-radius: 0.5rem;
+        }
+        .status-icon {
+            width: 2.5rem;
+            height: 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+        .map-container {
+            height: 300px;
+            border-radius: 1rem;
+            overflow: hidden;
+            margin: 1rem 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .impact-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        .impact-stat {
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .cart-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .cart-button {
+            position: fixed;
+            bottom: 5rem;
+            right: 1.5rem;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem;
+            border-radius: 50%;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            cursor: pointer;
+            z-index: 1000;
+        }
+        .cart-count {
+            position: absolute;
+            top: -0.5rem;
+            right: -0.5rem;
+            background-color: var(--accent-color);
+            padding: 0.25rem 0.5rem;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+        }
+        nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: white;
+            display: flex;
+            justify-content: space-around;
+            padding: 1rem;
+            box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+        .nav-btn {
+            color: #6B7280;
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            transition: color 0.3s;
+        }
+        .nav-btn.active {
+            color: var(--primary-color);
+        }
+        .nav-btn:hover {
+            color: var(--accent-color);
+        }
+        .menu-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1rem;
+            padding: 1rem;
+        }
+        .menu-item {
+            background-color: white;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        .menu-item:hover {
+            transform: translateY(-4px);
+        }
+        .checkout-button {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .checkout-button:hover {
+            background-color: var(--accent-color);
+        }
+        .payment-methods {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        .payment-method {
+            background-color: white;
+            border: 2px solid var(--border-color);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        .payment-method.selected {
+            border-color: var(--primary-color);
+            background-color: #f0fdf4;
+        }
+        .payment-method:hover {
+            border-color: var(--accent-color);
+        }
+        #notifications {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1000;
+        }
+        .notification {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+            animation: slideIn 0.3s ease-out;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        .login-form, .delivery-info {
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-top: 1rem;
+        }
+        .login-form input, .delivery-info input, .delivery-info textarea {
+            width: 100%;
+            padding: 0.75rem;
+            margin: 0.5rem 0;
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+        }
+        .login-form button, .delivery-info button {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .login-form button:hover, .delivery-info button:hover {
+            background-color: var(--accent-color);
+        }
+        .login-form button, #logoutButton {
+            margin-left: 1rem;
+        }
+        .restaurant-detail-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+        .restaurant-detail-header img {
+            width: 100%;
+            max-width: 300px;
+            border-radius: 1rem;
+            margin-bottom: 1rem;
+        }
+        .rating-stars {
+            display: flex;
+            gap: 0.25rem;
+            margin-bottom: 0.5rem;
+        }
+        .restaurant-badges {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .badge {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 1rem;
+            font-size: 0.875rem;
+        }
+        .menu-categories {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+        .menu-category {
+            background-color: var(--background-color);
+            border: 1px solid var(--border-color);
+            padding: 0.5rem 1rem;
+            border-radius: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .menu-category.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        .menu-category:hover {
+            background-color: var(--accent-color);
+            color: white;
+        }
+        .menu-section {
+            margin-bottom: 1.5rem;
+        }
+        .menu-section-title {
+            font-size: 1.25rem;
+            color: var(--primary-color);
+            margin-bottom: 0.75rem;
+        }
+        .menu-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        .menu-item-name {
+            font-weight: bold;
+        }
+        .menu-item-price {
+            color: var(--primary-color);
+        }
+        .menu-item-description {
+            margin-bottom: 0.5rem;
+            color: var(--text-color);
+        }
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .quantity-button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .quantity-button:hover {
+            background-color: var(--accent-color);
+        }
+        .empty-cart {
+            text-align: center;
+            padding: 2rem;
+        }
+        .order-details {
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: white;
+            border-radius: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .order-detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+        .address-input, .special-instructions {
+            width: 100%;
+            padding: 0.75rem;
+            margin: 0.5rem 0;
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+        }
+        .about-us {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-top: 2rem;
+        }
+        .about-us h2 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+        .about-us p {
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+        .about-us ul {
+            list-style-type: disc;
+            padding-left: 1.5rem;
+        }
+        .about-us ul li {
+            margin-bottom: 0.5rem;
+        }
     </style>
-  </head>
-  <body>
+</head>
+<body>
     <header>
-      <div class="container header-content">
-        <h1 id="ecodelivery-cartagena" class="title">EcoDelivery</h1>
-        <div>
-          <button
-            id="loginButton"
-            class="button"
-            onclick="showScreen('loginScreen')"
-          >
-            Iniciar Sesión
-          </button>
-          <button
-            id="logoutButton"
-            class="button"
-            style="display: none"
-            onclick="logout()"
-          >
-            Cerrar Sesión
-          </button>
+        <div class="container header-content">
+            <h1 id="ecodelivery-cartagena" class="title">EcoDelivery Cartagena</h1>
+            <div>
+                <button id="loginButton" class="button" onclick="showScreen('loginScreen')">Iniciar Sesión</button>
+                <button id="logoutButton" class="button" style="display:none;" onclick="logout()">Cerrar Sesión</button>
+            </div>
         </div>
-      </div>
     </header>
     <div class="container" role="main">
-      <div id="homeScreen" class="screen active">
-        <div id="categories" class="category-list">
-          <button class="active" onclick="filterCategory('Todos')">
-            Todos
-          </button>
-          <button onclick="filterCategory('Mariscos')">Mariscos</button>
-          <button onclick="filterCategory('Vegetariano')">Vegetariano</button>
-          <button onclick="filterCategory('Tradicional')">Tradicional</button>
-          <button onclick="filterCategory('Saludable')">Saludable</button>
-          <button onclick="filterCategory('Rápida')">Rápida</button>
-          <button onclick="filterCategory('Postres')">Postres</button>
+        <div id="homeScreen" class="screen active">
+            <div id="categories" class="category-list">
+                <button class="active" onclick="filterCategory('Todos')">Todos</button>
+                <button onclick="filterCategory('Mariscos')">Mariscos</button>
+                <button onclick="filterCategory('Vegetariano')">Vegetariano</button>
+                <button onclick="filterCategory('Tradicional')">Tradicional</button>
+                <button onclick="filterCategory('Saludable')">Saludable</button>
+                <button onclick="filterCategory('Rápida')">Rápida</button>
+                <button onclick="filterCategory('Postres')">Postres</button>
+            </div>
+            <div id="restaurantList" class="restaurant-list"></div>
         </div>
-        <div id="restaurantList" class="restaurant-list"></div>
-      </div>
-      <div id="trackingScreen" class="screen">
-        <h2>Seguimiento de Pedido</h2>
-        <div id="deliveryMap" class="map-container"></div>
-        <div id="orderStatus" class="tracking-info">
-          <div class="tracking-status">
-            <span class="status-icon bg-green-100">✓</span>
-            <span class="status-text">Pedido Confirmado</span>
-            <span class="status-time" id="orderConfirmedTime"></span>
-          </div>
-          <div class="tracking-status">
-            <span class="status-icon bg-blue-100">⟳</span>
-            <span class="status-text">En Preparación</span>
-            <span class="status-time" id="estimatedDeliveryTime"
-              >20-30 minutos</span
-            >
-          </div>
+        <div id="trackingScreen" class="screen">
+            <h2>Seguimiento de Pedido</h2>
+            <div id="deliveryMap" class="map-container"></div>
+            <div id="orderStatus" class="tracking-info">
+                <div class="tracking-status">
+                    <span class="status-icon bg-green-100">✓</span>
+                    <span class="status-text">Pedido Confirmado</span>
+                    <span class="status-time" id="orderConfirmedTime"></span>
+                </div>
+                <div class="tracking-status">
+                    <span class="status-icon bg-blue-100">⟳</span>
+                    <span class="status-text">En Preparación</span>
+                    <span class="status-time" id="estimatedDeliveryTime">20-30 minutos</span>
+                </div>
+            </div>
         </div>
-      </div>
-      <div id="impactScreen" class="screen">
-        <h2>Tu Impacto en Cartagena</h2>
-        <div id="impactMap" class="map-container"></div>
-        <div id="impactStats" class="impact-stats">
-          <div class="impact-stat">
-            <div class="impact-stat-title">Envases Retornados</div>
-            <div id="impactContainersReturned" class="impact-stat-value">0</div>
-          </div>
-          <div class="impact-stat">
-            <div class="impact-stat-title">CO2 Ahorrado</div>
-            <div id="impactCo2Saved" class="impact-stat-value">0 kg</div>
-          </div>
+        <div id="impactScreen" class="screen">
+            <h2>Tu Impacto en Cartagena</h2>
+            <div id="impactMap" class="map-container"></div>
+            <div id="impactStats" class="impact-stats">
+                <div class="impact-stat">
+                    <div class="impact-stat-title">Envases Retornados</div>
+                    <div id="impactContainersReturned" class="impact-stat-value">0</div>
+                </div>
+                <div class="impact-stat">
+                    <div class="impact-stat-title">CO2 Ahorrado</div>
+                    <div id="impactCo2Saved" class="impact-stat-value">0 kg</div>
+                </div>
+            </div>
         </div>
-      </div>
-      <div id="loginScreen" class="screen">
-        <h2>Iniciar Sesión</h2>
-        <form class="login-form" onsubmit="handleLogin(event)">
-          <input type="text" placeholder="Usuario" required />
-          <input type="password" placeholder="Contraseña" required />
-          <button type="submit" class="button">Iniciar Sesión</button>
-        </form>
-      </div>
-      <div id="restaurantDetailScreen" class="screen"></div>
-      <div id="cartScreen" class="screen">
-        <h2>Tu Carrito</h2>
-      </div>
+        <div id="loginScreen" class="screen">
+            <h2>Iniciar Sesión</h2>
+            <form class="login-form" onsubmit="handleLogin(event)">
+                <input type="text" placeholder="Usuario" required>
+                <input type="password" placeholder="Contraseña" required>
+                <button type="submit" class="button">Iniciar Sesión</button>
+            </form>
+        </div>
+        <div id="restaurantDetailScreen" class="screen"></div>
+        <div id="cartScreen" class="screen">
+            <h2>Tu Carrito</h2>
+        </div>
+        <div id="aboutUsScreen" class="screen">
+            <div class="about-us">
+                <h2>Quiénes Somos</h2>
+                <p>EcoDelivery Cartagena es un servicio de entrega de alimentos y productos con un sistema de envases 100% retornables y reutilizables. Nuestra app conecta restaurantes, tiendas y consumidores comprometidos con cero desperdicios.</p>
+                <p>Utilizamos un sistema de contenedores estandarizados y durables hechos de materiales ecológicos para reducir el impacto ambiental.</p>
+                <h3>Problemas que Solucionamos</h3>
+                <ul>
+                    <li>Reducción masiva de residuos plásticos del delivery tradicional.</li>
+                    <li>Costos elevados de empaques desechables para restaurantes.</li>
+                    <li>Demanda creciente de opciones sustentables por consumidores.</li>
+                    <li>Contaminación por transporte en delivery convencional.</li>
+                </ul>
+                <h3>Beneficios Medibles</h3>
+                <ul>
+                    <li>Reducción de toneladas de residuos plásticos anuales.</li>
+                    <li>Ahorro en costos de empaques para comercios.</li>
+                    <li>Menor huella de carbono en entregas.</li>
+                    <li>Creación de empleos verdes locales.</li>
+                </ul>
+            </div>
+        </div>
     </div>
     <div id="notifications"></div>
     <div class="cart-button" onclick="showScreen('cartScreen')">
-      🛒 <span class="cart-count">0</span>
+        🛒 <span class="cart-count">0</span>
     </div>
     <nav>
-      <a href="#" class="nav-btn active" onclick="showScreen('homeScreen')"
-        >🏠 Inicio</a
-      >
-      <a href="#" class="nav-btn" onclick="showScreen('impactScreen')"
-        >🌍 Impacto</a
-      >
-      <a href="#" class="nav-btn" onclick="showScreen('trackingScreen')"
-        >📦 Seguimiento</a
-      >
+        <a href="#" class="nav-btn active" onclick="showScreen('homeScreen')">🏠 Inicio</a>
+        <a href="#" class="nav-btn" onclick="showScreen('impactScreen')">🌍 Impacto</a>
+        <a href="#" class="nav-btn" onclick="showScreen('trackingScreen')">📦 Seguimiento</a>
+        <a href="#" class="nav-btn" onclick="showScreen('aboutUsScreen')">👥 Quiénes Somos</a>
     </nav>
     <script>
-      let currentCategory = "Todos";
-      let cartItems = [];
-      let selectedRestaurant = null;
-      let selectedPaymentMethod = null;
-      let deliveryAddress = "";
-      let specialInstructions = "";
-      let orderStatus = {
-        confirmed: false,
-        inPreparation: false,
-        estimatedDelivery: null,
-      };
-      const restaurants = [
-        {
-          id: 1,
-          name: "El Pescador",
-          category: "Mariscos",
-          rating: 4.5,
-          deliveryTime: "20-30 min",
-          image: "./elpescador.png",
-          menu: {
-            Pescados: [
-              {
-                id: 101,
-                name: "Pescado Frito",
-                description: "Mojarra frita con arroz de coco y patacones",
-                price: 25000,
-              },
-              {
-                id: 102,
-                name: "Cazuela de Mariscos",
-                description: "Deliciosa cazuela con variedad de mariscos",
-                price: 35000,
-              },
-            ],
-            Ceviches: [
-              {
-                id: 103,
-                name: "Ceviche Mixto",
-                description: "Ceviche de pescado y camarón",
-                price: 28000,
-              },
-            ],
-          },
-        },
-        {
-          id: 2,
-          name: "Verde & Sano",
-          category: "Vegetariano",
-          rating: 4.3,
-          deliveryTime: "25-35 min",
-          image: "./verdeysano.png",
-          menu: {
-            Ensaladas: [
-              {
-                id: 201,
-                name: "Ensalada César",
-                description: "Lechuga, crutones, queso parmesano",
-                price: 18000,
-              },
-            ],
-            Bowls: [
-              {
-                id: 202,
-                name: "Bowl de Quinoa",
-                description: "Quinoa, aguacate, garbanzos y vegetales",
-                price: 22000,
-              },
-            ],
-          },
-        },
-        {
-          id: 3,
-          name: "Sabor Cartagenero",
-          category: "Tradicional",
-          rating: 4.7,
-          deliveryTime: "15-25 min",
-          image: "./saborcartag.png",
-          menu: {
-            Sopas: [
-              {
-                id: 301,
-                name: "Sancocho de Pescado",
-                description: "Sopa tradicional con pescado y verduras",
-                price: 20000,
-              },
-            ],
-            "Platos Fuertes": [
-              {
-                id: 302,
-                name: "Posta Negra",
-                description: "Carne en salsa negra con arroz y ensalada",
-                price: 28000,
-              },
-            ],
-          },
-        },
-        {
-          id: 4,
-          name: "Rápido y Rico",
-          category: "Rápida",
-          rating: 4.2,
-          deliveryTime: "10-20 min",
-          image: "./rapidoyrico.png",
-          menu: {
-            Hamburguesas: [
-              {
-                id: 401,
-                name: "Hamburguesa Clásica",
-                description:
-                  "Carne de res, queso, lechuga, tomate y salsa especial",
-                price: 15000,
-              },
-              {
-                id: 402,
-                name: "Hamburguesa BBQ",
-                description:
-                  "Carne de res, queso cheddar, cebolla caramelizada y salsa BBQ",
-                price: 18000,
-              },
-            ],
-            Pizzas: [
-              {
-                id: 403,
-                name: "Pizza Margarita",
-                description: "Tomate, mozzarella y albahaca",
-                price: 20000,
-              },
-              {
-                id: 404,
-                name: "Pizza Pepperoni",
-                description: "Mozzarella y pepperoni",
-                price: 22000,
-              },
-            ],
-          },
-        },
-        {
-          id: 5,
-          name: "Dulce Tentación",
-          category: "Postres",
-          rating: 4.8,
-          deliveryTime: "15-25 min",
-          image: "./dulcetent.png",
-          menu: {
-            Tartas: [
-              {
-                id: 501,
-                name: "Tarta de Queso",
-                description:
-                  "Tarta de queso con base de galleta y mermelada de frutos rojos",
-                price: 12000,
-              },
-              {
-                id: 502,
-                name: "Tarta de Chocolate",
-                description: "Tarta de chocolate con cobertura de ganache",
-                price: 14000,
-              },
-            ],
-            Helados: [
-              {
-                id: 503,
-                name: "Helado de Vainilla",
-                description: "Helado de vainilla con trozos de chocolate",
-                price: 8000,
-              },
-              {
-                id: 504,
-                name: "Helado de Fresa",
-                description: "Helado de fresa con trozos de fruta",
-                price: 8000,
-              },
-            ],
-          },
-        },
-        {
-          id: 6,
-          name: "La Parrilla",
-          category: "Parrilla",
-          rating: 4.6,
-          deliveryTime: "20-30 min",
-          image: "./laparrilla.png",
-          menu: {
-            Carnes: [
-              {
-                id: 601,
-                name: "Churrasco",
-                description:
-                  "Churrasco a la parrilla con papas fritas y ensalada",
-                price: 30000,
-              },
-              {
-                id: 602,
-                name: "Costillas BBQ",
-                description: "Costillas de cerdo con salsa BBQ y papas fritas",
-                price: 35000,
-              },
-            ],
-            Pollo: [
-              {
-                id: 603,
-                name: "Pollo Asado",
-                description: "Pollo asado con papas y ensalada",
-                price: 25000,
-              },
-              {
-                id: 604,
-                name: "Alitas BBQ",
-                description: "Alitas de pollo con salsa BBQ",
-                price: 20000,
-              },
-            ],
-          },
-        },
-        {
-          id: 7,
-          name: "Veggie Delight",
-          category: "Vegano",
-          rating: 4.5,
-          deliveryTime: "25-35 min",
-          image: "./veggie.png",
-          menu: {
-            Entradas: [
-              {
-                id: 701,
-                name: "Hummus",
-                description: "Hummus con pan pita",
-                price: 15000,
-              },
-              {
-                id: 702,
-                name: "Falafel",
-                description: "Falafel con salsa tahini",
-                price: 18000,
-              },
-            ],
-            "Platos Principales": [
-              {
-                id: 703,
-                name: "Bowl de Buda",
-                description: "Arroz integral, tofu, vegetales y salsa de maní",
-                price: 22000,
-              },
-              {
-                id: 704,
-                name: "Tacos Veganos",
-                description: "Tacos con frijoles, aguacate y salsa de mango",
-                price: 20000,
-              },
-            ],
-          },
-        },
-        {
-          id: 8,
-          name: "Healthy Bites",
-          category: "Saludable",
-          rating: 4.7,
-          deliveryTime: "20-30 min",
-          image: "./healthybites.png",
-          menu: {
-            Ensaladas: [
-              {
-                id: 801,
-                name: "Ensalada de Kale",
-                description: "Kale, manzana, nueces y aderezo de limón",
-                price: 18000,
-              },
-              {
-                id: 802,
-                name: "Ensalada de Espinacas",
-                description: "Espinacas, fresas, almendras y vinagreta de miel",
-                price: 19000,
-              },
-            ],
-            Smoothies: [
-              {
-                id: 803,
-                name: "Smoothie Verde",
-                description: "Espinacas, manzana, plátano y leche de almendras",
-                price: 15000,
-              },
-              {
-                id: 804,
-                name: "Smoothie de Frutas",
-                description: "Fresas, plátano, mango y jugo de naranja",
-                price: 16000,
-              },
-            ],
-          },
-        },
-        {
-          id: 9,
-          name: "Fit & Fresh",
-          category: "Saludable",
-          rating: 4.8,
-          deliveryTime: "25-35 min",
-          image: "./fitnfresh.png",
-          menu: {
-            Wraps: [
-              {
-                id: 901,
-                name: "Wrap de Pollo",
-                description: "Pollo, lechuga, tomate y aderezo de yogur",
-                price: 20000,
-              },
-              {
-                id: 902,
-                name: "Wrap Vegetariano",
-                description: "Hummus, zanahoria, pepino y espinacas",
-                price: 18000,
-              },
-            ],
-            Jugos: [
-              {
-                id: 903,
-                name: "Jugo Detox",
-                description: "Pepino, apio, manzana y jengibre",
-                price: 12000,
-              },
-              {
-                id: 904,
-                name: "Jugo Energético",
-                description: "Naranja, zanahoria y cúrcuma",
-                price: 13000,
-              },
-            ],
-          },
-        },
-        {
-          id: 10,
-          name: "Gourmet Express",
-          category: "Gourmet",
-          rating: 4.9,
-          deliveryTime: "30-40 min",
-          image: "./gourmet.png",
-          menu: {
-            Entradas: [
-              {
-                id: 1001,
-                name: "Bruschetta",
-                description:
-                  "Pan tostado con tomate, albahaca y aceite de oliva",
-                price: 20000,
-              },
-              {
-                id: 1002,
-                name: "Carpaccio de Res",
-                description: "Láminas finas de res con rúcula y parmesano",
-                price: 25000,
-              },
-            ],
-            "Platos Fuertes": [
-              {
-                id: 1003,
-                name: "Risotto de Champiñones",
-                description: "Arroz cremoso con champiñones y parmesano",
-                price: 30000,
-              },
-              {
-                id: 1004,
-                name: "Salmón a la Parrilla",
-                description: "Salmón con vegetales asados",
-                price: 35000,
-              },
-            ],
-          },
-        },
-      ];
-      const paymentMethods = [
-        { id: "cash", name: "Efectivo", icon: "💵" },
-        { id: "credit", name: "Tarjeta de Crédito", icon: "💳" },
-        { id: "nequi", name: "Nequi", icon: "📱" },
-        { id: "daviplata", name: "Daviplata", icon: "📱" },
-      ];
-      function formatPrice(price) {
-        return price.toLocaleString("es-CO", {
-          style: "currency",
-          currency: "COP",
-        });
-      }
-      function showNotification(message) {
-        const notifications = document.getElementById("notifications");
-        const notification = document.createElement("div");
-        notification.className = "notification";
-        notification.textContent = message;
-        notifications.appendChild(notification);
-        setTimeout(() => notification.remove(), 3000);
-      }
-      function showScreen(screenId) {
-        document.querySelectorAll(".screen").forEach((screen) => {
-          screen.classList.remove("active");
-        });
-        document.getElementById(screenId).classList.add("active");
-        document.querySelectorAll(".nav-btn").forEach((btn) => {
-          btn.classList.remove("active");
-          if (btn.getAttribute("onclick").includes(screenId)) {
-            btn.classList.add("active");
-          }
-        });
-        if (screenId === "cartScreen") {
-          updateCart();
+        let currentCategory = "Todos";
+        let cartItems = [];
+        let selectedRestaurant = null;
+        let selectedPaymentMethod = null;
+        let deliveryAddress = "";
+        let specialInstructions = "";
+        let orderStatus = {
+            confirmed: false,
+            inPreparation: false,
+            estimatedDelivery: null
+        };
+        const restaurants = [
+            {
+                id: 1,
+                name: "El Pescador",
+                category: "Mariscos",
+                rating: 4.5,
+                deliveryTime: "20-30 min",
+                image: "./elpescador.png",
+                menu: {
+                    "Pescados": [
+                        {
+                            id: 101,
+                            name: "Pescado Frito",
+                            description: "Mojarra frita con arroz de coco y patacones",
+                            price: 25000
+                        },
+                        {
+                            id: 102,
+                            name: "Cazuela de Mariscos",
+                            description: "Deliciosa cazuela con variedad de mariscos",
+                            price: 35000
+                        }
+                    ],
+                    "Ceviches": [
+                        {
+                            id: 103,
+                            name: "Ceviche Mixto",
+                            description: "Ceviche de pescado y camarón",
+                            price: 28000
+                        }
+                    ]
+                }
+            },
+            {
+                id: 2,
+                name: "Verde & Sano",
+                category: "Vegetariano",
+                rating: 4.3,
+                deliveryTime: "25-35 min",
+                image: "./verdeysano.png",
+                menu: {
+                    "Ensaladas": [
+                        {
+                            id: 201,
+                            name: "Ensalada César",
+                            description: "Lechuga, crutones, queso parmesano",
+                            price: 18000
+                        }
+                    ],
+                    "Bowls": [
+                        {
+                            id: 202,
+                            name: "Bowl de Quinoa",
+                            description: "Quinoa, aguacate, garbanzos y vegetales",
+                            price: 22000
+                        }
+                    ]
+                }
+            },
+            {
+                id: 3,
+                name: "Sabor Cartagenero",
+                category: "Tradicional",
+                rating: 4.7,
+                deliveryTime: "15-25 min",
+                image: "./saborcartag.png",
+                menu: {
+                    "Sopas": [
+                        {
+                            id: 301,
+                            name: "Sancocho de Pescado",
+                            description: "Sopa tradicional con pescado y verduras",
+                            price: 20000
+                        }
+                    ],
+                    "Platos Fuertes": [
+                        {
+                            id: 302,
+                            name: "Posta Negra",
+                            description: "Carne en salsa negra con arroz y ensalada",
+                            price: 28000
+                        }
+                    ]
+                }
+            },
+            {
+                id: 4,
+                name: "Rápido y Rico",
+                category: "Rápida",
+                rating: 4.2,
+                deliveryTime: "10-20 min",
+                image: "./rapidoyrico.png",
+                menu: {
+                    "Hamburguesas": [
+                        {
+                            id: 401,
+                            name: "Hamburguesa Clásica",
+                            description: "Carne de res, queso, lechuga, tomate y salsa especial",
+                            price: 15000
+                        },
+                        {
+                            id: 402,
+                            name: "Hamburguesa BBQ",
+                            description: "Carne de res, queso cheddar, cebolla caramelizada y salsa BBQ",
+                            price: 18000
+                        }
+                    ],
+                    "Pizzas": [
+                        {
+                            id: 403,
+                            name: "Pizza Margarita",
+                            description: "Tomate, mozzarella y albahaca",
+                            price: 20000
+                        },
+                        {
+                            id: 404,
+                            name: "Pizza Pepperoni",
+                            description: "Mozzarella y pepperoni",
+                            price: 22000
+                        }
+                    ]
+                }
+            },
+            {
+                id: 5,
+                name: "Dulce Tentación",
+                category: "Postres",
+                rating: 4.8,
+                deliveryTime: "15-25 min",
+                image: "./dulcetent.png",
+                menu: {
+                    "Tartas": [
+                        {
+                            id: 501,
+                            name: "Tarta de Queso",
+                            description: "Tarta de queso con base de galleta y mermelada de frutos rojos",
+                            price: 12000
+                        },
+                        {
+                            id: 502,
+                            name: "Tarta de Chocolate",
+                            description: "Tarta de chocolate con cobertura de ganache",
+                            price: 14000
+                        }
+                    ],
+                    "Helados": [
+                        {
+                            id: 503,
+                            name: "Helado de Vainilla",
+                            description: "Helado de vainilla con trozos de chocolate",
+                            price: 8000
+                        },
+                        {
+                            id: 504,
+                            name: "Helado de Fresa",
+                            description: "Helado de fresa con trozos de fruta",
+                            price: 8000
+                        }
+                    ]
+                }
+            },
+            {
+                id: 6,
+                name: "La Parrilla",
+                category: "Parrilla",
+                rating: 4.6,
+                deliveryTime: "20-30 min",
+                image: "./laparrilla.png",
+                menu: {
+                    "Carnes": [
+                        {
+                            id: 601,
+                            name: "Churrasco",
+                            description: "Churrasco a la parrilla con papas fritas y ensalada",
+                            price: 30000
+                        },
+                        {
+                            id: 602,
+                            name: "Costillas BBQ",
+                            description: "Costillas de cerdo con salsa BBQ y papas fritas",
+                            price: 35000
+                        }
+                    ],
+                    "Pollo": [
+                        {
+                            id: 603,
+                            name: "Pollo Asado",
+                            description: "Pollo asado con papas y ensalada",
+                            price: 25000
+                        },
+                        {
+                            id: 604,
+                            name: "Alitas BBQ",
+                            description: "Alitas de pollo con salsa BBQ",
+                            price: 20000
+                        }
+                    ]
+                }
+            },
+            {
+                id: 7,
+                name: "Veggie Delight",
+                category: "Vegano",
+                rating: 4.5,
+                deliveryTime: "25-35 min",
+                image: "./veggie.png",
+                menu: {
+                    "Entradas": [
+                    {
+                            id: 701,
+                            name: "Hummus",
+                            description: "Hummus con pan pita",
+                            price: 15000
+                        },
+                        {
+                            id: 702,
+                            name: "Falafel",
+                            description: "Falafel con salsa tahini",
+                            price: 18000
+                        }
+                    ],
+                    "Platos Principales": [
+                        {
+                            id: 703,
+                            name: "Bowl de Buda",
+                            description: "Arroz integral, tofu, vegetales y salsa de maní",
+                            price: 22000
+                        },
+                        {
+                            id: 704,
+                            name: "Tacos Veganos",
+                            description: "Tacos con frijoles, aguacate y salsa de mango",
+                            price: 20000
+                        }
+                    ]
+                }
+            },
+            {
+                id: 8,
+                name: "Healthy Bites",
+                category: "Saludable",
+                rating: 4.7,
+                deliveryTime: "20-30 min",
+                image: "./healthybites.png",
+                menu: {
+                    "Ensaladas": [
+                        {
+                            id: 801,
+                            name: "Ensalada de Kale",
+                            description: "Kale, manzana, nueces y aderezo de limón",
+                            price: 18000
+                        },
+                        {
+                            id: 802,
+                            name: "Ensalada de Espinacas",
+                            description: "Espinacas, fresas, almendras y vinagreta de miel",
+                            price: 19000
+                        }
+                    ],
+                    "Smoothies": [
+                        {
+                            id: 803,
+                            name: "Smoothie Verde",
+                            description: "Espinacas, manzana, plátano y leche de almendras",
+                            price: 15000
+                        },
+                        {
+                            id: 804,
+                            name: "Smoothie de Frutas",
+                            description: "Fresas, plátano, mango y jugo de naranja",
+                            price: 16000
+                        }
+                    ]
+                }
+            },
+            {
+                id: 9,
+                name: "Fit & Fresh",
+                category: "Saludable",
+                rating: 4.8,
+                deliveryTime: "25-35 min",
+                image: "./fitnfresh.png",
+                menu: {
+                    "Wraps": [
+                        {
+                            id: 901,
+                            name: "Wrap de Pollo",
+                            description: "Pollo, lechuga, tomate y aderezo de yogur",
+                            price: 20000
+                        },
+                        {
+                            id: 902,
+                            name: "Wrap Vegetariano",
+                            description: "Hummus, zanahoria, pepino y espinacas",
+                            price: 18000
+                        }
+                    ],
+                    "Jugos": [
+                        {
+                            id: 903,
+                            name: "Jugo Detox",
+                            description: "Pepino, apio, manzana y jengibre",
+                            price: 12000
+                        },
+                        {
+                            id: 904,
+                            name: "Jugo Energético",
+                            description: "Naranja, zanahoria y cúrcuma",
+                            price: 13000
+                        }
+                    ]
+                }
+            },
+            {
+                id: 10,
+                name: "Gourmet Express",
+                category: "Gourmet",
+                rating: 4.9,
+                deliveryTime: "30-40 min",
+                image: "./gourmet.png",
+                menu: {
+                    "Entradas": [
+                        {
+                            id: 1001,
+                            name: "Bruschetta",
+                            description: "Pan tostado con tomate, albahaca y aceite de oliva",
+                            price: 20000
+                        },
+                        {
+                            id: 1002,
+                            name: "Carpaccio de Res",
+                            description: "Láminas finas de res con rúcula y parmesano",
+                            price: 25000
+                        }
+                    ],
+                    "Platos Fuertes": [
+                        {
+                            id: 1003,
+                            name: "Risotto de Champiñones",
+                            description: "Arroz cremoso con champiñones y parmesano",
+                            price: 30000
+                        },
+                        {
+                            id: 1004,
+                            name: "Salmón a la Parrilla",
+                            description: "Salmón con vegetales asados",
+                            price: 35000
+                        }
+                    ]
+                }
+            }
+        ];
+        const paymentMethods = [
+            { id: 'cash', name: 'Efectivo', icon: '💵' },
+            { id: 'credit', name: 'Tarjeta de Crédito', icon: '💳' },
+            { id: 'nequi', name: 'Nequi', icon: '📱' },
+            { id: 'daviplata', name: 'Daviplata', icon: '📱' }
+        ];
+        function formatPrice(price) {
+            return price.toLocaleString('es-CO', {
+                style: 'currency',
+                currency: 'COP'
+            });
         }
-      }
-      function renderRestaurants() {
-        const restaurantList = document.getElementById("restaurantList");
-        const filteredRestaurants =
-          currentCategory === "Todos"
-            ? restaurants
-            : restaurants.filter((r) => r.category === currentCategory);
-        restaurantList.innerHTML = filteredRestaurants
-          .map(
-            (restaurant) => `
+        function showNotification(message) {
+            const notifications = document.getElementById('notifications');
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = message;
+            notifications.appendChild(notification);
+            setTimeout(() => notification.remove(), 3000);
+        }
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.getAttribute('onclick').includes(screenId)) {
+                    btn.classList.add('active');
+                }
+            });
+            if (screenId === 'cartScreen') {
+                updateCart();
+            }
+        }
+        function renderRestaurants() {
+            const restaurantList = document.getElementById('restaurantList');
+            const filteredRestaurants = currentCategory === "Todos" 
+                ? restaurants 
+                : restaurants.filter(r => r.category === currentCategory);
+            restaurantList.innerHTML = filteredRestaurants.map(restaurant => `
                 <div class="restaurant-card" onclick="renderRestaurantMenu(${restaurant.id})">
                     <img src="${restaurant.image}" alt="${restaurant.name}">
                     <div class="restaurant-card-content">
@@ -980,92 +984,80 @@
                         </div>
                     </div>
                 </div>
-            `
-          )
-          .join("");
-      }
-      function filterCategory(category) {
-        currentCategory = category;
-        document.querySelectorAll(".category-list button").forEach((btn) => {
-          btn.classList.toggle("active", btn.textContent === category);
-        });
-        renderRestaurants();
-      }
-      function addToCart(itemId) {
-        const restaurant = selectedRestaurant;
-        const item = Object.values(restaurant.menu)
-          .flat()
-          .find((item) => item.id === itemId);
-        if (item) {
-          const existingItem = cartItems.find(
-            (cartItem) => cartItem.id === item.id
-          );
-          if (existingItem) {
-            existingItem.quantity += 1;
-          } else {
-            cartItems.push({ ...item, quantity: 1 });
-          }
-          updateCartCount();
-          showNotification("Producto agregado al carrito");
+            `).join('');
         }
-      }
-      function updateCartCount() {
-        const cartCount = document.querySelector(".cart-count");
-        cartCount.textContent = cartItems.reduce(
-          (sum, item) => sum + item.quantity,
-          0
-        );
-      }
-      function updateQuantity(itemId, change) {
-        const item = cartItems.find((item) => item.id === itemId);
-        if (item) {
-          item.quantity += change;
-          if (item.quantity <= 0) {
-            cartItems = cartItems.filter((item) => item.id !== itemId);
-          }
-          updateCart();
-          updateCartCount();
+        function filterCategory(category) {
+            currentCategory = category;
+            document.querySelectorAll('.category-list button').forEach(btn => {
+                btn.classList.toggle('active', btn.textContent === category);
+            });
+            renderRestaurants();
         }
-      }
-      function updateOrderConfirmedTime() {
-        const orderConfirmedTime =
-          document.getElementById("orderConfirmedTime");
-        orderConfirmedTime.textContent = new Date().toLocaleTimeString();
-      }
-      function updateEstimatedDeliveryTime() {
-        const now = new Date();
-        const estimatedMinutes = Math.floor(Math.random() * (30 - 20 + 1)) + 20;
-        const estimated = new Date(now.getTime() + estimatedMinutes * 60000);
-        const estimatedTime = document.getElementById("estimatedDeliveryTime");
-        estimatedTime.textContent = `${estimatedMinutes} minutos (${estimated.toLocaleTimeString()})`;
-        orderStatus.estimatedDelivery = estimated;
-      }
-      function initMaps() {
-        const CARTAGENA_CENTER = [10.3997, -75.5144];
-        deliveryMap = L.map("deliveryMap").setView(CARTAGENA_CENTER, 13);
-        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(
-          deliveryMap
-        );
-        impactMap = L.map("impactMap").setView(CARTAGENA_CENTER, 13);
-        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(
-          impactMap
-        );
-        deliveryMarker = L.marker(CARTAGENA_CENTER).addTo(deliveryMap);
-        restaurantMarker = L.marker(CARTAGENA_CENTER).addTo(deliveryMap);
-        userMarker = L.marker(CARTAGENA_CENTER).addTo(deliveryMap);
-      }
-      function renderRestaurantMenu(restaurantId) {
-        const restaurant = restaurants.find((r) => r.id === restaurantId);
-        if (!restaurant) return;
-        selectedRestaurant = restaurant;
-        const detailScreen = document.getElementById("restaurantDetailScreen");
-        detailScreen.innerHTML = `
+        function addToCart(itemId) {
+            const restaurant = selectedRestaurant;
+            const item = Object.values(restaurant.menu)
+                .flat()
+                .find(item => item.id === itemId);
+            if (item) {
+                const existingItem = cartItems.find(cartItem => cartItem.id === item.id);
+                if (existingItem) {
+                    existingItem.quantity += 1;
+                } else {
+                    cartItems.push({ ...item, quantity: 1 });
+                }
+                updateCartCount();
+                showNotification('Producto agregado al carrito');
+            }
+        }
+        function updateCartCount() {
+            const cartCount = document.querySelector('.cart-count');
+            cartCount.textContent = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+        }
+        function updateQuantity(itemId, change) {
+            const item = cartItems.find(item => item.id === itemId);
+            if (item) {
+                item.quantity += change;
+                if (item.quantity <= 0) {
+                    cartItems = cartItems.filter(item => item.id !== itemId);
+                }
+                updateCart();
+                updateCartCount();
+            }
+        }
+        function updateOrderConfirmedTime() {
+            const orderConfirmedTime = document.getElementById('orderConfirmedTime');
+            orderConfirmedTime.textContent = new Date().toLocaleTimeString();
+        }
+        function updateEstimatedDeliveryTime() {
+            const now = new Date();
+            const estimatedMinutes = Math.floor(Math.random() * (30 - 20 + 1)) + 20;
+            const estimated = new Date(now.getTime() + estimatedMinutes * 60000);
+            const estimatedTime = document.getElementById('estimatedDeliveryTime');
+            estimatedTime.textContent = `${estimatedMinutes} minutos (${estimated.toLocaleTimeString()})`;
+            orderStatus.estimatedDelivery = estimated;
+        }
+        function initMaps() {
+            const CARTAGENA_CENTER = [10.3997, -75.5144];
+            deliveryMap = L.map('deliveryMap').setView(CARTAGENA_CENTER, 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(deliveryMap);
+            impactMap = L.map('impactMap').setView(CARTAGENA_CENTER, 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(impactMap);
+            deliveryMarker = L.marker(CARTAGENA_CENTER).addTo(deliveryMap);
+            restaurantMarker = L.marker(CARTAGENA_CENTER).addTo(deliveryMap);
+            userMarker = L.marker(CARTAGENA_CENTER).addTo(deliveryMap);
+        }
+        function renderRestaurantMenu(restaurantId) {
+            const restaurant = restaurants.find(r => r.id === restaurantId);
+            if (!restaurant) return;
+            selectedRestaurant = restaurant;
+            const detailScreen = document.getElementById('restaurantDetailScreen');
+            detailScreen.innerHTML = `
                 <div class="restaurant-detail-header">
                     <img src="${restaurant.image}" alt="${restaurant.name}">
                     <h2>${restaurant.name}</h2>
                     <div class="rating-stars">
-                        ${"⭐".repeat(Math.floor(restaurant.rating))}
-                        ${restaurant.rating % 1 !== 0 ? "⭐️" : ""}
+                        ${'⭐'.repeat(Math.floor(restaurant.rating))}
+                        ${restaurant.rating % 1 !== 0 ? '⭐️' : ''}
                     </div>
                     <div class="restaurant-badges">
                         <span class="badge">⏲️ ${restaurant.deliveryTime}</span>
@@ -1073,224 +1065,176 @@
                     </div>
                 </div>
                 <div class="menu-categories">
-                    ${Object.keys(restaurant.menu)
-                      .map(
-                        (category) => `
+                    ${Object.keys(restaurant.menu).map(category => `
                         <button class="menu-category" onclick="filterMenuCategory('${category}')">
                             ${category}
                         </button>
-                    `
-                      )
-                      .join("")}
+                    `).join('')}
                 </div>
-                ${Object.entries(restaurant.menu)
-                  .map(
-                    ([category, items]) => `
+                ${Object.entries(restaurant.menu).map(([category, items]) => `
                     <div class="menu-section">
                         <h3 class="menu-section-title">${category}</h3>
                         <div class="menu-list">
-                            ${items
-                              .map(
-                                (item) => `
+                            ${items.map(item => `
                                 <div class="menu-item">
                                     <div class="menu-item-header">
-                                        <span class="menu-item-name">${
-                                          item.name
-                                        }</span>
-                                        <span class="menu-item-price">${formatPrice(
-                                          item.price
-                                        )}</span>
+                                        <span class="menu-item-name">${item.name}</span>
+                                        <span class="menu-item-price">${formatPrice(item.price)}</span>
                                     </div>
-                                    <p class="menu-item-description">${
-                                      item.description
-                                    }</p>
-                                    <button onclick="addToCart(${
-                                      item.id
-                                    })" class="checkout-button">
+                                    <p class="menu-item-description">${item.description}</p>
+                                    <button onclick="addToCart(${item.id})" class="checkout-button">
                                         Agregar al carrito
                                     </button>
                                 </div>
-                            `
-                              )
-                              .join("")}
+                            `).join('')}
                         </div>
                     </div>
-                `
-                  )
-                  .join("")}
+                `).join('')}
             `;
-        showScreen("restaurantDetailScreen");
-      }
-      function updateCart() {
-        const cartScreen = document.getElementById("cartScreen");
-        const total = cartItems.reduce(
-          (sum, item) => sum + item.price * item.quantity,
-          0
-        );
-        const deliveryFee = 5000;
-        cartScreen.innerHTML = `
-            <h2>Tu Carrito</h2>
-            ${
-              cartItems.length === 0
-                ? `
-                <div class="empty-cart">
-                    <p>Tu carrito está vacío</p>
-                    <button onclick="showScreen('homeScreen')" class="checkout-button">
-                        Explorar Restaurantes
-                    </button>
-                </div>
-            `
-                : `
-                <div class="cart-list">
-                    ${cartItems
-                      .map(
-                        (item) => `
-                        <div class="cart-item">
-                            <div class="cart-item-info">
-                                <h3>${item.name}</h3>
-                                <div class="quantity-control">
-                                    <button class="quantity-button" onclick="updateQuantity(${
-                                      item.id
-                                    }, -1)">-</button>
-                                    <span>${item.quantity}</span>
-                                    <button class="quantity-button" onclick="updateQuantity(${
-                                      item.id
-                                    }, 1)">+</button>
+            showScreen('restaurantDetailScreen');
+        }
+        function updateCart() {
+            const cartScreen = document.getElementById('cartScreen');
+            const total = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const deliveryFee = 5000;
+            cartScreen.innerHTML = `
+                <h2>Tu Carrito</h2>
+                ${cartItems.length === 0 ? `
+                    <div class="empty-cart">
+                        <p>Tu carrito está vacío</p>
+                        <button onclick="showScreen('homeScreen')" class="checkout-button">
+                            Explorar Restaurantes
+                        </button>
+                    </div>
+                ` : `
+                    <div class="cart-list">
+                        ${cartItems.map(item => `
+                            <div class="cart-item">
+                                <div class="cart-item-info">
+                                    <h3>${item.name}</h3>
+                                    <div class="quantity-control">
+                                        <button class="quantity-button" onclick="updateQuantity(${item.id}, -1)">-</button>
+                                        <span>${item.quantity}</span>
+                                        <button class="quantity-button" onclick="updateQuantity(${item.id}, 1)">+</button>
+                                    </div>
                                 </div>
+                                <span class="cart-item-price">${formatPrice(item.price * item.quantity)}</span>
                             </div>
-                            <span class="cart-item-price">${formatPrice(
-                              item.price * item.quantity
-                            )}</span>
+                        `).join('')}
+                    </div>
+                    <div class="order-details">
+                        <div class="order-detail-row">
+                            <span>Subtotal</span>
+                            <span>${formatPrice(total)}</span>
                         </div>
-                    `
-                      )
-                      .join("")}
-                </div>
-                <div class="order-details">
-                    <div class="order-detail-row">
-                        <span>Subtotal</span>
-                        <span>${formatPrice(total)}</span>
-                    </div>
-                    <div class="order-detail-row">
-                        <span>Envío</span>
-                        <span>${formatPrice(deliveryFee)}</span>
-                    </div>
-                    <div class="order-detail-row">
-                        <strong>Total</strong>
-                        <strong>${formatPrice(total + deliveryFee)}</strong>
-                    </div>
-                </div>
-                <div class="delivery-info">
-                    <h3>Información de Entrega</h3>
-                    <input 
-                        type="text" 
-                        class="address-input" 
-                        placeholder="Dirección de entrega"
-                        value="${deliveryAddress}"
-                        onchange="updateDeliveryAddress(event)"
-                    >
-                    <textarea 
-                        class="special-instructions" 
-                        placeholder="Instrucciones especiales (opcional)"
-                        onchange="updateSpecialInstructions(event)"
-                    >${specialInstructions}</textarea>
-                </div>
-                <div class="payment-methods">
-                    ${paymentMethods
-                      .map(
-                        (method) => `
-                        <div class="payment-method ${
-                          selectedPaymentMethod === method.id ? "selected" : ""
-                        }"
-                            onclick="selectPaymentMethod('${method.id}')">
-                            <div class="payment-method-icon">${
-                              method.icon
-                            }</div>
-                            <div>${method.name}</div>
+                        <div class="order-detail-row">
+                            <span>Envío</span>
+                            <span>${formatPrice(deliveryFee)}</span>
                         </div>
-                    `
-                      )
-                      .join("")}
-                </div>
-                <button onclick="checkout()" class="checkout-button">
-                    Realizar Pedido (${formatPrice(total + deliveryFee)})
-                </button>
-            `
+                        <div class="order-detail-row">
+                            <strong>Total</strong>
+                            <strong>${formatPrice(total + deliveryFee)}</strong>
+                        </div>
+                    </div>
+                    <div class="delivery-info">
+                        <h3>Información de Entrega</h3>
+                        <input 
+                            type="text" 
+                            class="address-input" 
+                            placeholder="Dirección de entrega"
+                            value="${deliveryAddress}"
+                            onchange="updateDeliveryAddress(event)"
+                        >
+                        <textarea 
+                            class="special-instructions" 
+                            placeholder="Instrucciones especiales (opcional)"
+                            onchange="updateSpecialInstructions(event)"
+                        >${specialInstructions}</textarea>
+                    </div>
+                    <div class="payment-methods">
+                        ${paymentMethods.map(method => `
+                            <div class="payment-method ${selectedPaymentMethod === method.id ? 'selected' : ''}"
+                                onclick="selectPaymentMethod('${method.id}')">
+                                <div class="payment-method-icon">${method.icon}</div>
+                                <div>${method.name}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <button onclick="checkout()" class="checkout-button">
+                        Realizar Pedido (${formatPrice(total + deliveryFee)})
+                    </button>
+                `}
+            `;
+        }
+        function updateDeliveryAddress(event) {
+            deliveryAddress = event.target.value;
+        }
+        function updateSpecialInstructions(event) {
+            specialInstructions = event.target.value;
+        }
+        function selectPaymentMethod(methodId) {
+            selectedPaymentMethod = methodId;
+            updateCart();
+        }
+        function checkout() {
+            if (cartItems.length === 0) {
+                showNotification('El carrito está vacío');
+                return;
             }
-        `;
-      }
-      function updateDeliveryAddress(event) {
-        deliveryAddress = event.target.value;
-      }
-      function updateSpecialInstructions(event) {
-        specialInstructions = event.target.value;
-      }
-      function selectPaymentMethod(methodId) {
-        selectedPaymentMethod = methodId;
-        updateCart();
-      }
-      function checkout() {
-        if (cartItems.length === 0) {
-          showNotification("El carrito está vacío");
-          return;
+            if (!deliveryAddress) {
+                showNotification('Por favor ingresa una dirección de entrega');
+                return;
+            }
+            if (!selectedPaymentMethod) {
+                showNotification('Por favor selecciona un método de pago');
+                return;
+            }
+            orderStatus.confirmed = true;
+            orderStatus.inPreparation = true;
+            updateOrderConfirmedTime();
+            updateEstimatedDeliveryTime();
+            cartItems = [];
+            deliveryAddress = "";
+            specialInstructions = "";
+            selectedPaymentMethod = null;
+            updateCartCount();
+            showScreen('trackingScreen');
+            showNotification('¡Pedido confirmado! En preparación');
+            updateEnvironmentalImpact();
+            showNotification('¡Has contribuido a reducir la huella de carbono!');
         }
-        if (!deliveryAddress) {
-          showNotification("Por favor ingresa una dirección de entrega");
-          return;
+        function filterMenuCategory(category) {
+            document.querySelectorAll('.menu-category').forEach(btn => {
+                btn.classList.toggle('active', btn.textContent.trim() === category);
+            });
         }
-        if (!selectedPaymentMethod) {
-          showNotification("Por favor selecciona un método de pago");
-          return;
+        let environmentalImpact = {
+            containersReturned: 0,
+            co2Saved: 0
+        };
+        function updateEnvironmentalImpact() {
+            environmentalImpact.containersReturned++;
+            environmentalImpact.co2Saved += 0.5; // Ejemplo de cálculo
+            document.getElementById('impactContainersReturned').textContent = environmentalImpact.containersReturned;
+            document.getElementById('impactCo2Saved').textContent = `${environmentalImpact.co2Saved} kg`;
         }
-        orderStatus.confirmed = true;
-        orderStatus.inPreparation = true;
-        updateOrderConfirmedTime();
-        updateEstimatedDeliveryTime();
-        cartItems = [];
-        deliveryAddress = "";
-        specialInstructions = "";
-        selectedPaymentMethod = null;
-        updateCartCount();
-        showScreen("trackingScreen");
-        showNotification("¡Pedido confirmado! En preparación");
-        updateEnvironmentalImpact();
-        showNotification("¡Has contribuido a reducir la huella de carbono!");
-      }
-      function filterMenuCategory(category) {
-        document.querySelectorAll(".menu-category").forEach((btn) => {
-          btn.classList.toggle("active", btn.textContent.trim() === category);
+        function handleLogin(event) {
+            event.preventDefault();
+            document.getElementById('loginButton').style.display = 'none';
+            document.getElementById('logoutButton').style.display = 'block';
+            showScreen('homeScreen');
+            showNotification('Inicio de sesión exitoso');
+        }
+        function logout() {
+            document.getElementById('loginButton').style.display = 'block';
+            document.getElementById('logoutButton').style.display = 'none';
+            showScreen('homeScreen');
+            showNotification('Sesión cerrada');
+        }
+        document.addEventListener('DOMContentLoaded', () => {
+            renderRestaurants();
+            initMaps();
         });
-      }
-      let environmentalImpact = {
-        containersReturned: 0,
-        co2Saved: 0,
-      };
-      function updateEnvironmentalImpact() {
-        environmentalImpact.containersReturned++;
-        environmentalImpact.co2Saved += 0.5; // Ejemplo de cálculo
-        document.getElementById("impactContainersReturned").textContent =
-          environmentalImpact.containersReturned;
-        document.getElementById(
-          "impactCo2Saved"
-        ).textContent = `${environmentalImpact.co2Saved} kg`;
-      }
-      function handleLogin(event) {
-        event.preventDefault();
-        document.getElementById("loginButton").style.display = "none";
-        document.getElementById("logoutButton").style.display = "block";
-        showScreen("homeScreen");
-        showNotification("Inicio de sesión exitoso");
-      }
-      function logout() {
-        document.getElementById("loginButton").style.display = "block";
-        document.getElementById("logoutButton").style.display = "none";
-        showScreen("homeScreen");
-        showNotification("Sesión cerrada");
-      }
-      document.addEventListener("DOMContentLoaded", () => {
-        renderRestaurants();
-        initMaps();
-      });
     </script>
-  </body>
+</body>
 </html>
